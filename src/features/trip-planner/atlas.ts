@@ -74,7 +74,7 @@ const PACKS: PlanPack[] = [
     evening: [
       { title: "Lantern-lit old town + candle boats", notes: "After 8pm the day-trippers leave. Float a paper lantern on the Thu Bon river and walk the riverbank both sides.", tags: ["chill", "culture"] },
       { title: "Night market food graze on An Hoi island", notes: "Cross the bridge to the lantern stalls: grilled skewers, bánh xèo pancakes, black-sesame sweet soup.", tags: ["foodie"] },
-      { title: "Riverside bia hơi with the locals", notes "Fresh draft beer for pennies at the plastic-stool joints east of the market — the real Hoi An happy hour.", tags: ["foodie", "chill"] },
+      { title: "Riverside bia hơi with the locals", notes: "Fresh draft beer for pennies at the plastic-stool joints east of the market — the real Hoi An happy hour.", tags: ["foodie", "chill"] },
       { title: "Memories Show at Hoi An Impression Park", notes: "A genuinely spectacular outdoor theatre production about the port's history — 500 performers on a river island.", tags: ["culture"] },
       { title: "Beach bonfire night at An Bang", notes: "The beach bars run low-key bonfires most dry-season nights; sea breeze, cold beer, bare feet.", tags: ["beach", "chill"] },
     ],

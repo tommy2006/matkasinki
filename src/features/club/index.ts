@@ -99,8 +99,8 @@ export interface RewardEntry {
 
 /** Squad entry enriched with market data straight from the football DB. */
 export interface DerivedPlayer extends SquadPlayerBase {
-  value: number; // market value from the DB
-  potential: number; // potential_ability from the DB
+  value?: number; // market value from the DB (absent for legacy/persisted entries)
+  potential?: number; // potential_ability from the DB
 }
 
 type SquadPlayerBase = import("@/lib/store").SquadPlayer;

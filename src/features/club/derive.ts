@@ -21,6 +21,7 @@ import {
   tierForVerifiedCount,
   MAX_REWARDS_PER_LOCATION,
   type DerivedClub,
+  type DerivedPlayer,
   type RewardEntry,
 } from "./index";
 
@@ -120,13 +121,15 @@ function bestPosition(p: DbPlayer): string {
   return [...p.positions].sort((a, b) => b.level - a.level)[0].code;
 }
 
-function toSquadPlayer(p: DbPlayer, scoutedIn: string): SquadPlayer {
+function toSquadPlayer(p: DbPlayer, scoutedIn: string): DerivedPlayer {
   return {
     id: p.id,
     name: `${p.first_name} ${p.last_name}`.trim(),
     position: bestPosition(p),
     ability: p.current_ability,
     scoutedIn,
+    value: p.value,
+    potential: p.potential_ability,
   };
 }
 
@@ -145,7 +148,7 @@ const CHALLENGE_APPEARANCE_FEE = 50_000;
  */
 export function deriveClub(events: TravelEvent[], profile?: AppState["profile"]): DerivedClub {
   const playable = new Set(isDbAvailable() ? getPlayableCountryCodes() : []);
-  const squad: SquadPlayer[] = [];
+  const squad: DerivedPlayer[] = [];
   const staff: StaffMember[] = [];
   const rewards: RewardEntry[] = [];
   const seenPlayerIds = new Set<number>();

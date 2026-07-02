@@ -130,10 +130,10 @@ async function discoveryViaWebResearch(
   // Gather every text block (the JSON) and every URL Claude actually read.
   let text = "";
   const readUrls: string[] = [];
-  for (const block of res.content as Array<Record<string, unknown>>) {
+  for (const block of res.content as unknown as Array<Record<string, unknown>>) {
     if (block.type === "text" && typeof block.text === "string") text += block.text + "\n";
     if (block.type === "web_search_tool_result" && Array.isArray(block.content)) {
-      for (const r of block.content as Array<Record<string, unknown>>) {
+      for (const r of block.content as unknown as Array<Record<string, unknown>>) {
         if (r?.type === "web_search_result" && typeof r.url === "string") readUrls.push(r.url);
       }
     }
@@ -213,7 +213,7 @@ async function scoutLocal(query: unknown): Promise<LocalChallenge[]> {
         ],
       });
       let text = "";
-      for (const block of res.content as Array<Record<string, unknown>>) {
+      for (const block of res.content as unknown as Array<Record<string, unknown>>) {
         if (block.type === "text" && typeof block.text === "string") text += block.text + "\n";
       }
       const items = extractJsonArray(text)
