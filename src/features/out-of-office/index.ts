@@ -36,7 +36,7 @@ export async function sendAwayEmail(args: {
     .map((l) => (l ? `<p>${l}</p>` : "<br/>"))
     .join("")}</div>`;
 
-  if (!process.env.RESEND_API_KEY) {
+  if (!resend) {
     return { sent: false, demo: true, to, from, subject, html };
   }
 
