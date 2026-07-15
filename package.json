@@ -21,6 +21,7 @@
     "@mapbox/polyline": "^1.2.1",
     "ai": "^7.0.28",
     "maplibre-gl": "^5.24.0",
+    "@assistant-ui/react": "^0.14.26",
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
