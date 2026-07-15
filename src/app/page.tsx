@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-// The product opens on the real first question: "where is worth going?"
+// The app opens straight on the HSL journey planner.
 export default function Home() {
-  redirect("/discover");
+  redirect("/journey");
 }

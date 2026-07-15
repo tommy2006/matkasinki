@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.40.0",
+    "leaflet": "^1.9.4",
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -23,6 +24,7 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "electron": "^43.0.0",
@@ -30,15 +32,18 @@
     "typescript": "^5.6.0"
   },
   "build": {
-    "appId": "com.airportcup.app",
-    "productName": "Airport Cup",
+    "appId": "com.matkasinki.app",
+    "productName": "Matkasinki",
     "asar": false,
-    "directories": { "output": "release" },
+    "directories": {
+      "output": "release"
+    },
     "files": [
       "next.config.mjs",
       "package.json",
       "electron/**/*",
       ".next/**/*",
+      "src/data/**/*",
       "public/**/*",
       "node_modules/**/*",
       "!**/*.map",
@@ -48,10 +53,9 @@
       "!node_modules/electron-builder/**",
       "!node_modules/app-builder-*/**"
     ],
-    "extraResources": [
-      { "from": "data/open-football-database/data", "to": "open-football-database/data" }
-    ],
-    "win": { "target": "nsis" },
+    "win": {
+      "target": "nsis"
+    },
     "nsis": {
       "oneClick": false,
       "perMachine": false,

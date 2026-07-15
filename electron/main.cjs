@@ -70,7 +70,7 @@ async function createWindow() {
     minHeight: 640,
     backgroundColor: "#0b0e14",
     show: false,
-    title: "Airport Cup",
+    title: "Matkasinki — HSL journey planner",
     autoHideMenuBar: true,
     webPreferences: { contextIsolation: true, nodeIntegration: false },
   });
