@@ -1,9 +1,9 @@
 // Proxy for Digitransit HSL raster map tiles. Keeps the subscription key
 // server-side (loaded from .env) instead of exposing it to the browser.
 
-export const dynamic = "force-dynamic";
+import { digitransitKey } from "@/lib/hsl/digitransit";
 
-const KEY = () => process.env.DIGITRANSIT_PRIMARY_KEY || process.env.DIGITRANSIT_SECONDARY_KEY || "";
+export const dynamic = "force-dynamic";
 
 export async function GET(
   _req: Request,
@@ -11,7 +11,7 @@ export async function GET(
 ) {
   const { z, x, y } = await params;
   const yy = y.replace(/\.png$/, "");
-  const key = KEY();
+  const key = digitransitKey() ?? "";
   const url = `https://cdn.digitransit.fi/map/v3/hsl-map/${z}/${x}/${yy}.png${key ? `?digitransit-subscription-key=${key}` : ""}`;
   try {
     const res = await fetch(url, { headers: key ? { "digitransit-subscription-key": key } : {} });

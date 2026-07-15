@@ -1,8 +1,8 @@
 "use client";
 
 // HSL journey planner. Build an itinerary of >= 2 destinations (HSL zones A–E),
-// and the app routes the best path across HSL vehicles, biased by today's
-// (dummy) weather, and draws it on the interactive Digitransit HSL map.
+// route via the live Digitransit HSL GraphQL API (with offline graph fallback),
+// biased by today's weather, and draw real leg geometry on the Digitransit map.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
@@ -98,7 +98,7 @@ export default function JourneyPage() {
       const res = await fetch("/api/journey", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stopIds: itinerary.map((s) => s.id) }),
+        body: JSON.stringify({ destinations: itinerary }),
       });
       setResult(await res.json());
     } catch {

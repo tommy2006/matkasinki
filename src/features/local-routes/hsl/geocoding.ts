@@ -1,3 +1,4 @@
+import { digitransitKey } from "@/lib/hsl/digitransit";
 import type { Place } from "../types";
 import { digitransitGeocodingHeaders } from "./client";
 
@@ -25,7 +26,7 @@ export async function geocodePlace(text: string, limit = 5): Promise<Place[]> {
     layers: "venue,address,stop",
   });
 
-  const key = process.env.DIGITRANSIT_API_KEY;
+  const key = digitransitKey();
   if (key) params.set("digitransit-subscription-key", key);
 
   const res = await fetch(`${GEO_URL}?${params}`, {

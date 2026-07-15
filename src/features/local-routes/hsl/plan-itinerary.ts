@@ -17,7 +17,7 @@ query PlanHelsinki(
     via: $via
     first: 1
     dateTime: { earliestDeparture: $departure }
-    modes: { transit: { transit: [{ mode: BUS }, { mode: TRAM }, { mode: RAIL }, { mode: FERRY }] } }
+    modes: { transit: { transit: [{ mode: BUS }, { mode: TRAM }, { mode: RAIL }, { mode: SUBWAY }, { mode: FERRY }] } }
   ) {
     edges {
       node {

@@ -13,17 +13,17 @@ interface TravelMapProps {
 
 const HELSINKI_CENTER = { longitude: 24.9384, latitude: 60.1699, zoom: 12 };
 
-const DARK_BASEMAP = {
+const HSL_BASEMAP = {
   version: 8 as const,
   sources: {
-    carto: {
+    hsl: {
       type: "raster" as const,
-      tiles: ["https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"],
+      tiles: ["/api/tiles/{z}/{x}/{y}.png"],
       tileSize: 256,
-      attribution: "© CARTO © OSM",
+      attribution: "© Digitransit / HSL, © OpenStreetMap",
     },
   },
-  layers: [{ id: "carto", type: "raster" as const, source: "carto" }],
+  layers: [{ id: "hsl", type: "raster" as const, source: "hsl" }],
 };
 
 function collectBounds(plan: LocalRoutePlan): [[number, number], [number, number]] | null {
@@ -90,8 +90,7 @@ export default function TravelMap({ plan }: TravelMapProps) {
         ref={mapRef}
         initialViewState={HELSINKI_CENTER}
         style={{ width: "100%", height: "100%" }}
-        mapStyle={DARK_BASEMAP}
-        attributionControl={false}
+        mapStyle={HSL_BASEMAP}
       >
         <NavigationControl position="top-right" showCompass={false} />
 
