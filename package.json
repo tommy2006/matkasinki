@@ -15,14 +15,21 @@
     "dist": "next build && electron-builder"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.15",
+    "@ai-sdk/react": "^4.0.30",
     "@anthropic-ai/sdk": "^0.40.0",
+    "@mapbox/polyline": "^1.2.1",
+    "ai": "^7.0.28",
+    "maplibre-gl": "^5.24.0",
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-map-gl": "^8.1.1",
     "resend": "^4.0.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@types/mapbox__polyline": "^1.0.5",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "electron": "^43.0.0",
@@ -33,7 +40,9 @@
     "appId": "com.airportcup.app",
     "productName": "Airport Cup",
     "asar": false,
-    "directories": { "output": "release" },
+    "directories": {
+      "output": "release"
+    },
     "files": [
       "next.config.mjs",
       "package.json",
@@ -49,9 +58,14 @@
       "!node_modules/app-builder-*/**"
     ],
     "extraResources": [
-      { "from": "data/open-football-database/data", "to": "open-football-database/data" }
+      {
+        "from": "data/open-football-database/data",
+        "to": "open-football-database/data"
+      }
     ],
-    "win": { "target": "nsis" },
+    "win": {
+      "target": "nsis"
+    },
     "nsis": {
       "oneClick": false,
       "perMachine": false,

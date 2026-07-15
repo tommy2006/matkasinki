@@ -185,6 +185,16 @@ function PlanInner() {
             Two dates, one budget slider, one button. No forms, no fuss — we&apos;ll
             draft a day-by-day itinerary you can reshuffle.
           </p>
+          {/helsinki/i.test(destination) && (
+            <div className="card" style={{ marginTop: "var(--space-3)", borderColor: "var(--accent)" }}>
+              <p style={{ margin: 0, fontSize: "0.9rem" }}>
+                Planning a day in Helsinki with real HSL routes and a map?{" "}
+                <Link href="/routes" className="btn btn--ghost" style={{ display: "inline-flex", padding: "4px 12px" }}>
+                  Open Helsinki Routes →
+                </Link>
+              </p>
+            </div>
+          )}
         </header>
 
         {/* Controls */}
