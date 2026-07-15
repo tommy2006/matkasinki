@@ -128,6 +128,10 @@
   background: var(--bg);
 }
 
+.planner-chat__hint {
+  color: var(--accent-2);
+}
+
 .planner-chat__form {
   flex: none;
   border-top: var(--pl-border-strong);
