@@ -1,8 +1,8 @@
 {
   "date": "2026-07-15",
-  "condition": "rain",
-  "tempC": 14,
-  "precipitationMm": 4.2,
-  "windKmh": 18,
-  "summary": "Steady rain through the afternoon"
+  "condition": "clouds",
+  "tempC": 15,
+  "precipitationMm": 0,
+  "windKmh": 14,
+  "summary": "Overcast but dry"
 }

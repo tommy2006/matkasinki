@@ -23,6 +23,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Link>
             <div className="nav__links">
               <Link href="/journey" className="nav__link">Journey</Link>
+              <Link href="/routes" className="nav__link">Routes</Link>
+              <Link href="/chat" className="nav__link">Chat</Link>
               <span className="nav__link nav__link--muted">HSL zones A–E</span>
             </div>
           </div>
