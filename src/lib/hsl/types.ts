@@ -50,6 +50,8 @@ export interface TransportPreference {
   message: string;
 }
 
+import type { FareInfo } from "./fare";
+
 export interface JourneyResult {
   ok: boolean;
   error?: string;
@@ -58,5 +60,6 @@ export interface JourneyResult {
   totalSeconds: number;
   weather: WeatherInfo;
   preference: TransportPreference;
+  fare?: FareInfo; // HSL zone ticket for the whole itinerary
   bounds?: [[number, number], [number, number]]; // [[minLat,minLon],[maxLat,maxLon]]
 }

@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import type { JourneyResult, StopLite } from "@/lib/hsl/types";
+import WeatherControl from "./WeatherControl";
 
 const MapView = dynamic(() => import("./MapView"), {
   ssr: false,
@@ -115,6 +116,11 @@ export default function JourneyPage() {
     }
   }, [canPlan, itinerary]);
 
+  // Flipping the day's weather re-plans so the rain→transport bias updates live.
+  const onWeatherChange = useCallback(() => {
+    if (canPlan) plan();
+  }, [canPlan, plan]);
+
   const mapDestinations = useMemo(
     () => (result?.ok ? result.destinations : itinerary),
     [result, itinerary],
@@ -137,6 +143,7 @@ export default function JourneyPage() {
         <div className="jp-grid">
           {/* left: builder + results */}
           <div className="stack" style={{ gap: "var(--space-5)" }}>
+            <WeatherControl onChange={onWeatherChange} />
             <div className="card rise rise-2 stack" style={{ gap: "var(--space-4)" }}>
               <div className="stack" style={{ gap: "var(--space-2)", position: "relative" }} ref={boxRef}>
                 <span className="muted jp-label">Add a destination</span>
@@ -207,6 +214,18 @@ export default function JourneyPage() {
                   <span className="badge badge--accent">{result.segments.length} leg{result.segments.length > 1 ? "s" : ""}</span>
                 </div>
 
+                {result.fare && (
+                  <div className="jp-fare">
+                    <span className="jp-fare-ticket">{result.fare.ticket}</span>
+                    <div style={{ flex: 1 }}>
+                      <strong>€{result.fare.priceEUR.toFixed(2)} · {result.fare.ticket} ticket</strong>
+                      <p className="muted" style={{ margin: 0, fontSize: "0.83rem" }}>
+                        {result.fare.description} · valid {result.fare.validityMinutes} min · zones {result.fare.zonesTouched.join("")}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {result.segments.map((seg, si) => (
                   <div key={si} className="card stack" style={{ gap: "var(--space-3)" }}>
                     <div className="spread">
@@ -275,6 +294,8 @@ const css = `
 .jp-weather { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-4); border-radius: var(--radius); background: var(--bg-raised); border: 1px solid var(--line); }
 .jp-weather--rain { border-color: var(--accent-2); background: linear-gradient(180deg, rgba(251,191,36,0.08), transparent); }
 .jp-weather-icon { font-size: 1.5rem; line-height: 1; }
+.jp-fare { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius); background: var(--bg-raised); border: 1px solid var(--accent-2); }
+.jp-fare-ticket { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; letter-spacing: 0.06em; color: #2b1d00; background: var(--accent-2); border-radius: var(--radius-sm); padding: 6px 12px; flex: none; }
 .jp-leg { display: flex; align-items: center; gap: var(--space-3); }
 .jp-leg-icon { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; font-size: 0.95rem; flex: none; color: #fff; }
 .jp-leg-text { flex: 1; font-size: 0.92rem; }

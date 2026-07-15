@@ -6,6 +6,7 @@
 // switch you to a "walk" state. When it's raining, walking and ferry legs are
 // penalised so the search naturally prefers trains, the metro and buses.
 
+import { computeFare } from "./fare";
 import { getStop, haversine, loadNetwork, toLite } from "./network";
 import type { JourneyLeg, JourneyResult, JourneySegment, Mode, StopLite, TransportPreference } from "./types";
 import { loadWeather, transportPreference } from "./weather";
@@ -252,6 +253,10 @@ export function planItinerary(stopIds: string[]): JourneyResult {
     });
   }
 
+  // Fare: every zone the route actually passes through (all leg endpoints).
+  const zones: (string | null)[] = [];
+  for (const seg of segments) for (const l of seg.legs) { zones.push(l.from.zone, l.to.zone); }
+
   return {
     ok: true,
     destinations,
@@ -259,6 +264,7 @@ export function planItinerary(stopIds: string[]): JourneyResult {
     totalSeconds,
     weather,
     preference,
+    fare: computeFare(zones),
     bounds: [
       [minLat, minLon],
       [maxLat, maxLon],
