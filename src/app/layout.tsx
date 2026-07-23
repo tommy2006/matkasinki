@@ -18,10 +18,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <nav className="nav">
           <div className="nav__inner">
-            <Link href="/journey" className="nav__brand">
+            <Link href="/" className="nav__brand">
               🚇 Matkasinki
             </Link>
             <div className="nav__links">
+              <Link href="/" className="nav__link">Home</Link>
               <Link href="/journey" className="nav__link">Journey</Link>
               <Link href="/routes" className="nav__link">Routes</Link>
               <Link href="/chat" className="nav__link">Chat</Link>

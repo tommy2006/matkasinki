@@ -79,8 +79,35 @@ export async function handleRoutePlannerPost(req: Request): Promise<Response> {
     return await createAgentUIStreamResponse({
       agent: routePlannerAgent,
       uiMessages,
+      // The Response is returned before the model runs, so a mid-stream failure
+      // can't be caught by try/catch. Translate it into something actionable.
+      onError: (error) => humanErrorMessage(error),
     });
-  } catch {
+  } catch (error) {
+    // Failed before streaming even started — fall back to a sample plan.
+    console.error("[route-planner] live agent unavailable:", error);
     return sampleResponse(prompt);
   }
+}
+
+/** Turn raw provider errors into messages a human can act on. */
+function humanErrorMessage(error: unknown): string {
+  const msg = error instanceof Error ? error.message : String(error ?? "");
+  if (/credit balance is too low/i.test(msg)) {
+    return (
+      "The AI planner is unavailable: this Anthropic account has no API credits. " +
+      "Add credits at console.anthropic.com → Plans & Billing — and make sure it's the same " +
+      "organisation/workspace the API key belongs to — then try again."
+    );
+  }
+  if (/rate.?limit|\b429\b/i.test(msg)) {
+    return "The AI planner is rate-limited right now. Please wait a moment and try again.";
+  }
+  if (/api[- ]?key|authentication|\b401\b/i.test(msg)) {
+    return "The AI planner isn't configured correctly — check ANTHROPIC_API_KEY in your .env, then restart the server.";
+  }
+  if (/overloaded|\b529\b|\b503\b/i.test(msg)) {
+    return "The AI service is temporarily overloaded. Please try again shortly.";
+  }
+  return "The AI planner hit an unexpected error. The server log has the details.";
 }

@@ -43,6 +43,8 @@ interface PlanInput {
   destination: Coordinate;
   via?: Coordinate[];
   departureIso?: string;
+  /** Itinerary day these legs belong to — one planItinerary call per day. */
+  day?: number;
 }
 
 interface RawLeg {
@@ -84,8 +86,10 @@ export async function planItinerary(input: PlanInput): Promise<RouteLeg[]> {
   });
 
   const legs = data.planConnection?.edges?.[0]?.node?.legs ?? [];
+  const day = input.day && input.day > 0 ? input.day : 1;
   return legs.map((leg) => ({
     mode: leg.mode ?? "WALK",
+    day,
     durationSeconds: leg.duration ?? 0,
     distanceMeters: leg.distance,
     fromName: leg.from?.name ?? "",
@@ -97,15 +101,40 @@ export async function planItinerary(input: PlanInput): Promise<RouteLeg[]> {
   }));
 }
 
-export function stopsFromCoordinates(
-  coords: { name: string; lat: number; lon: number; category?: string }[],
-): RouteStop[] {
-  return coords.map((c, i) => ({
-    order: i + 1,
-    name: c.name,
-    lat: c.lat,
-    lon: c.lon,
-    category: c.category,
-    dwellMinutes: i === 0 ? 0 : 45,
-  }));
+interface StopInput {
+  name: string;
+  lat: number;
+  lon: number;
+  day?: number;
+  category?: string;
+  dwellMinutes?: number;
+  timeLabel?: string;
+  why?: string;
+}
+
+/**
+ * Numbers stops per day rather than across the whole trip, so the map pins on
+ * each day read 1, 2, 3… — the numbering a traveller expects when they are
+ * looking at one day at a time.
+ */
+export function stopsFromCoordinates(coords: StopInput[]): RouteStop[] {
+  const seenPerDay = new Map<number, number>();
+
+  return coords.map((c) => {
+    const day = c.day && c.day > 0 ? c.day : 1;
+    const order = (seenPerDay.get(day) ?? 0) + 1;
+    seenPerDay.set(day, order);
+
+    return {
+      order,
+      day,
+      name: c.name,
+      lat: c.lat,
+      lon: c.lon,
+      category: c.category,
+      dwellMinutes: c.dwellMinutes ?? (order === 1 ? 0 : 45),
+      timeLabel: c.timeLabel,
+      why: c.why,
+    };
+  });
 }

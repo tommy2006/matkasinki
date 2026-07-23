@@ -53,7 +53,12 @@ function buildToolStream(plan: LocalRoutePlan, reply: string, messageId: string)
     {
       type: "tool-output-available",
       toolCallId: routeId,
-      output: { legCount: plan.legs.length, legs: plan.legs },
+      output: {
+        routeId,
+        legCount: plan.legs.length,
+        // Mirrors the live tool: the model-facing legs carry no geometry.
+        legs: plan.legs.map(({ polyline: _polyline, ...leg }) => leg),
+      },
       providerExecuted: true,
     },
     {
@@ -66,14 +71,18 @@ function buildToolStream(plan: LocalRoutePlan, reply: string, messageId: string)
         summary: plan.summary,
         originLat: plan.origin.lat,
         originLon: plan.origin.lon,
+        days: plan.days,
         stops: plan.stops.map((s) => ({
           name: s.name,
           lat: s.lat,
           lon: s.lon,
+          day: s.day,
           category: s.category,
           dwellMinutes: s.dwellMinutes,
+          timeLabel: s.timeLabel,
+          why: s.why,
         })),
-        legs: plan.legs,
+        routeIds: [routeId],
       },
       providerExecuted: true,
     },

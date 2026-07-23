@@ -4,6 +4,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useEffect, useMemo, useState } from "react";
 import { CHAT_SUGGESTIONS } from "@/features/local-routes/chat-suggestions";
+import { followUpSuggestions } from "@/features/local-routes/follow-ups";
 import type { LocalRoutePlan } from "@/features/local-routes/types";
 import ChatMessageVisual from "@/components/routes/visuals/ChatMessageVisual";
 import { extractPlanFromMessages } from "@/lib/local-routes/extract-plan";
@@ -18,7 +19,7 @@ export default function RouteChat({ api = "/api/chat", onPlanChange, onStreaming
   const [input, setInput] = useState("");
   const transport = useMemo(() => new DefaultChatTransport({ api }), [api]);
 
-  const { messages, sendMessage, status, error } = useChat({
+  const { messages, sendMessage, status, error, stop } = useChat({
     transport,
     onFinish: ({ messages: finished }) => {
       const plan = extractPlanFromMessages(finished);
@@ -26,12 +27,15 @@ export default function RouteChat({ api = "/api/chat", onPlanChange, onStreaming
     },
   });
 
+  const plan = useMemo(() => extractPlanFromMessages(messages), [messages]);
+
   useEffect(() => {
-    const plan = extractPlanFromMessages(messages);
     if (plan) onPlanChange(plan);
-  }, [messages, onPlanChange]);
+  }, [plan, onPlanChange]);
 
   const busy = status === "submitted" || status === "streaming";
+  // Only offer follow-ups once a plan exists and nothing is in flight.
+  const followUps = useMemo(() => (busy ? [] : followUpSuggestions(plan)), [busy, plan]);
 
   useEffect(() => {
     onStreamingChange?.(busy);
@@ -78,6 +82,24 @@ export default function RouteChat({ api = "/api/chat", onPlanChange, onStreaming
           <ChatMessageVisual key={m.id} message={m} />
         ))}
         {error && <p className="planner-error">{error.message}</p>}
+
+        {followUps.length > 0 && (
+          <div className="planner-chat__followups">
+            <span className="planner-chat__followups-label">Ask next</span>
+            <div className="planner-chat__suggestions">
+              {followUps.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  className="planner-chat__suggestion"
+                  onClick={() => submitText(s)}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="planner-chat__form">
@@ -93,11 +115,20 @@ export default function RouteChat({ api = "/api/chat", onPlanChange, onStreaming
             }
           }}
           placeholder="Plan a Helsinki trip with museums"
-          disabled={busy}
         />
-        <button type="submit" className="planner-chat__send" disabled={busy || !input.trim()}>
-          Send
-        </button>
+        {busy ? (
+          <button
+            type="button"
+            className="planner-chat__send planner-chat__send--stop"
+            onClick={() => stop()}
+          >
+            Stop
+          </button>
+        ) : (
+          <button type="submit" className="planner-chat__send" disabled={!input.trim()}>
+            Send
+          </button>
+        )}
       </form>
     </div>
   );

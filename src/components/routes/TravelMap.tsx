@@ -2,13 +2,26 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import Map, { Layer, Marker, NavigationControl, Source, type MapRef } from "react-map-gl/maplibre";
-import type { LocalRoutePlan } from "@/features/local-routes/types";
+import type { LocalRoutePlan, RouteLeg, RouteStop } from "@/features/local-routes/types";
 import RouteMapLegend from "@/components/routes/RouteMapLegend";
-import { isWalkMode, modeStyle, stopMarkerTone } from "@/components/routes/visuals/format";
+import {
+  dayColor,
+  dayOf,
+  isWalkMode,
+  legsForDay,
+  modeStyle,
+  modeTag,
+  planDays,
+  stopMarkerTone,
+  stopsForDay,
+  type ModeStyle,
+} from "@/components/routes/visuals/format";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 interface TravelMapProps {
   plan: LocalRoutePlan | null;
+  /** Day to show, or null for the whole trip. */
+  activeDay?: number | null;
 }
 
 const HELSINKI_CENTER = { longitude: 24.9384, latitude: 60.1699, zoom: 12 };
@@ -26,10 +39,13 @@ const HSL_BASEMAP = {
   layers: [{ id: "hsl", type: "raster" as const, source: "hsl" }],
 };
 
-function collectBounds(plan: LocalRoutePlan): [[number, number], [number, number]] | null {
+function collectBounds(
+  stops: RouteStop[],
+  legs: RouteLeg[],
+): [[number, number], [number, number]] | null {
   const coords: [number, number][] = [];
-  for (const stop of plan.stops) coords.push([stop.lon, stop.lat]);
-  for (const leg of plan.legs) {
+  for (const stop of stops) coords.push([stop.lon, stop.lat]);
+  for (const leg of legs) {
     for (const point of leg.polyline) coords.push(point);
   }
   if (coords.length === 0) return null;
@@ -50,24 +66,26 @@ function collectBounds(plan: LocalRoutePlan): [[number, number], [number, number
   ];
 }
 
-export default function TravelMap({ plan }: TravelMapProps) {
+/** Point roughly halfway along a polyline — where the route badge sits. */
+function midpoint(polyline: [number, number][]): [number, number] | null {
+  if (polyline.length === 0) return null;
+  return polyline[Math.floor(polyline.length / 2)];
+}
+
+export default function TravelMap({ plan, activeDay = null }: TravelMapProps) {
   const mapRef = useRef<MapRef>(null);
 
-  const lineFeatures = useMemo(() => {
-    if (!plan) return [];
-    return plan.legs.map((leg, i) => ({
-      type: "Feature" as const,
-      properties: { index: i, mode: leg.mode },
-      geometry: {
-        type: "LineString" as const,
-        coordinates: leg.polyline.length > 1 ? leg.polyline : [],
-      },
-    }));
-  }, [plan]);
+  const days = useMemo(() => (plan ? planDays(plan) : []), [plan]);
+  const multiDay = days.length > 1;
+  // Across a whole multi-day trip the lines are coloured by day so the days
+  // stay separable; inside one day they go back to carrying transit mode.
+  const colorByDay = multiDay && activeDay == null;
+
+  const stops = useMemo(() => (plan ? stopsForDay(plan, activeDay) : []), [plan, activeDay]);
+  const legs = useMemo(() => (plan ? legsForDay(plan, activeDay) : []), [plan, activeDay]);
 
   useEffect(() => {
-    if (!plan) return;
-    const bounds = collectBounds(plan);
+    const bounds = collectBounds(stops, legs);
     const map = mapRef.current?.getMap();
     if (!map || !bounds) return;
 
@@ -76,13 +94,17 @@ export default function TravelMap({ plan }: TravelMapProps) {
       maxZoom: 15,
       duration: 700,
     });
-  }, [plan]);
+  }, [stops, legs]);
+
+  const legend: ModeStyle[] | undefined = colorByDay
+    ? days.map((d) => ({ color: dayColor(d.day), label: `Day ${d.day}` }))
+    : undefined;
 
   if (!plan) {
     return <div className="planner-map__wrap planner-map__wrap--empty">Map</div>;
   }
 
-  const stopTotal = plan.stops.length;
+  const stopTotal = stops.length;
 
   return (
     <div className="planner-map__wrap">
@@ -94,10 +116,16 @@ export default function TravelMap({ plan }: TravelMapProps) {
       >
         <NavigationControl position="top-right" showCompass={false} />
 
-        {lineFeatures.map((feature, i) => {
-          if (feature.geometry.coordinates.length < 2) return null;
-          const style = modeStyle(feature.properties.mode);
-          const walk = isWalkMode(feature.properties.mode);
+        {legs.map((leg, i) => {
+          if (leg.polyline.length < 2) return null;
+          const walk = isWalkMode(leg.mode);
+          const color = colorByDay ? dayColor(dayOf(leg)) : modeStyle(leg.mode).color;
+          const dash = walk ? ([2, 2] as [number, number]) : undefined;
+          const feature = {
+            type: "Feature" as const,
+            properties: {},
+            geometry: { type: "LineString" as const, coordinates: leg.polyline },
+          };
 
           return (
             <Source key={`leg-${i}`} id={`leg-${i}`} type="geojson" data={feature}>
@@ -115,10 +143,10 @@ export default function TravelMap({ plan }: TravelMapProps) {
                 id={`leg-line-${i}`}
                 type="line"
                 paint={{
-                  "line-color": style.color,
+                  "line-color": color,
                   "line-width": walk ? 4 : 6,
                   "line-opacity": 1,
-                  ...(style.dash ? { "line-dasharray": style.dash } : {}),
+                  ...(dash ? { "line-dasharray": dash } : {}),
                 }}
                 layout={{ "line-cap": "round", "line-join": "round" }}
               />
@@ -126,23 +154,60 @@ export default function TravelMap({ plan }: TravelMapProps) {
           );
         })}
 
-        {plan.stops.map((stop) => {
-          const tone = stopMarkerTone(stop.order, stopTotal);
+        {/* Route labels: which line you actually board, pinned to the leg it belongs to. */}
+        {legs.map((leg, i) => {
+          if (isWalkMode(leg.mode) || leg.polyline.length < 2) return null;
+          const at = midpoint(leg.polyline);
+          if (!at) return null;
+          const color = colorByDay ? dayColor(dayOf(leg)) : modeStyle(leg.mode).color;
+
           return (
-            <Marker key={stop.order} longitude={stop.lon} latitude={stop.lat} anchor="bottom">
+            <Marker key={`leg-label-${i}`} longitude={at[0]} latitude={at[1]} anchor="center">
+              <span
+                className="planner-map__leg-badge"
+                style={{ borderColor: color, color }}
+                title={leg.instruction}
+              >
+                {modeTag(leg.mode, leg.line)}
+              </span>
+            </Marker>
+          );
+        })}
+
+        {stops.map((stop) => {
+          const day = dayOf(stop);
+          const tone = stopMarkerTone(stop.order, stopTotal);
+          const showDay = multiDay && activeDay == null;
+
+          return (
+            <Marker
+              key={`${day}-${stop.order}`}
+              longitude={stop.lon}
+              latitude={stop.lat}
+              anchor="bottom"
+            >
               <div className="planner-map__pin">
-                <div className={`planner-map__pin-dot planner-map__pin-dot--${tone}`}>
+                <div
+                  className={`planner-map__pin-dot planner-map__pin-dot--${tone}`}
+                  style={showDay ? { background: dayColor(day), color: "#0b0e14" } : undefined}
+                >
                   {stop.order}
                 </div>
-                <span className="planner-map__pin-label" title={stop.name}>
-                  {stop.name}
+                <span className="planner-map__pin-label" title={stop.why ?? stop.name}>
+                  <span className="planner-map__pin-name">
+                    {showDay && <b className="planner-map__pin-day">D{day}</b>}
+                    {stop.name}
+                  </span>
+                  {stop.timeLabel && (
+                    <span className="planner-map__pin-time">{stop.timeLabel}</span>
+                  )}
                 </span>
               </div>
             </Marker>
           );
         })}
       </Map>
-      <RouteMapLegend />
+      <RouteMapLegend items={legend} />
     </div>
   );
 }

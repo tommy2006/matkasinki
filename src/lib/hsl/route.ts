@@ -208,8 +208,8 @@ function legRouteId(leg: JourneyLeg): string | undefined {
  * Plan a full itinerary of >= 2 HSL destinations: route each consecutive pair
  * and stitch the legs together. Weather from the dummy JSON biases every leg.
  */
-export function planItinerary(stopIds: string[]): JourneyResult {
-  const weather = loadWeather();
+export async function planItinerary(stopIds: string[]): Promise<JourneyResult> {
+  const weather = await loadWeather();
   const preference = transportPreference(weather);
   const net = loadNetwork();
 

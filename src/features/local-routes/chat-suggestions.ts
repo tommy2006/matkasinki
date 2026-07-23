@@ -1,5 +1,9 @@
 export const CHAT_SUGGESTIONS = [
   {
+    id: "weekend-three-day",
+    prompt: "Plan a three-day Helsinki itinerary",
+  },
+  {
     id: "museum-punavuori",
     prompt: "Plan a Helsinki trip with museums",
   },

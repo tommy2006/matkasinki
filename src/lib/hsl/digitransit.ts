@@ -301,7 +301,7 @@ function rawLegToJourneyLeg(leg: RawLeg, segIndex: number, legIndex: number): Jo
 }
 
 export async function planDigitransitJourney(destinations: StopLite[]): Promise<JourneyResult> {
-  const weather = loadWeather();
+  const weather = await loadWeather();
   const preference = transportPreference(weather);
 
   if (destinations.length < 2) {

@@ -1,6 +1,13 @@
 import type { Place, PlaceCategory } from "../types";
 
-const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
+// Overpass is community-run and frequently rate-limits (429) or times out (504).
+// Try several mirrors in order before giving up.
+const OVERPASS_URLS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass.osm.ch/api/interpreter",
+];
+const REQUEST_TIMEOUT_MS = 20_000;
 
 const CATEGORY_TAGS: Record<PlaceCategory, string[]> = {
   museum: ['nwr["tourism"="museum"]'],
@@ -67,17 +74,43 @@ export async function searchPlaces(
   if (hit && Date.now() - hit.at < CACHE_MS) return hit.places;
 
   const query = buildQuery(categories, limit);
-  const res = await fetch(OVERPASS_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: `data=${encodeURIComponent(query)}`,
-    cache: "no-store",
-  });
-  if (!res.ok) {
-    throw new Error(`Overpass failed (${res.status})`);
+
+  // Try each mirror; on total failure fall back to a stale cache entry so the
+  // agent still gets usable data instead of an exception.
+  let lastError = "";
+  let json: { elements?: Parameters<typeof elementToPlace>[0][] } | null = null;
+
+  for (const url of OVERPASS_URLS) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `data=${encodeURIComponent(query)}`,
+        cache: "no-store",
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        lastError = `${new URL(url).host} returned ${res.status}`;
+        continue;
+      }
+      json = (await res.json()) as { elements?: Parameters<typeof elementToPlace>[0][] };
+      break;
+    } catch (err) {
+      lastError =
+        err instanceof Error && err.name === "AbortError"
+          ? `${new URL(url).host} timed out`
+          : `${new URL(url).host}: ${err instanceof Error ? err.message : "request failed"}`;
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
-  const json = (await res.json()) as { elements?: Parameters<typeof elementToPlace>[0][] };
+  if (!json) {
+    if (hit) return hit.places; // stale but useful
+    throw new Error(`OpenStreetMap place search is unavailable right now (${lastError}).`);
+  }
   const places = (json.elements ?? [])
     .map(elementToPlace)
     .filter((p): p is Place => p !== null)

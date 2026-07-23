@@ -14,7 +14,11 @@ export const routePlannerAgent = new ToolLoopAgent({
   model: anthropic(modelId),
   instructions: HELSINKI_SYSTEM_PROMPT,
   tools: routeTools,
-  stopWhen: stepCountIs(6),
+  // A multi-day trip needs a step per day for planItinerary, plus place lookups,
+  // savePlan and the final reply. At 6 a 3-day plan ran out mid-routing and
+  // never reached savePlan, so no map was ever drawn. 18 clears a 5-day trip
+  // (the prompt's ceiling) with room for a retry.
+  stopWhen: stepCountIs(18),
 });
 
 export function isRoutePlannerAvailable(): boolean {

@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Digitransit routing failed";
       if (destinations.every((d) => getStop(d.id))) {
-        const fallback = planStaticItinerary(destinations.map((d) => d.id));
+        const fallback = await planStaticItinerary(destinations.map((d) => d.id));
         return Response.json({ ...fallback, warning: `${message} — used offline graph` });
       }
       return Response.json(
@@ -53,5 +53,5 @@ export async function POST(req: Request) {
   }
 
   const stopIds = destinations.map((d) => d.id);
-  return Response.json(planStaticItinerary(stopIds));
+  return Response.json(await planStaticItinerary(stopIds));
 }

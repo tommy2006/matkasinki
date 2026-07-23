@@ -36,12 +36,35 @@
   width: 100%;
 }
 
+.planner__home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--fg-muted);
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.planner__home:hover {
+  color: var(--fg);
+  background: var(--bg-overlay);
+  border-color: var(--accent);
+  text-decoration: none;
+}
+
 .planner__title {
   font-family: var(--font-display);
   font-size: 0.95rem;
   font-weight: 600;
   letter-spacing: -0.02em;
   margin: 0;
+  /* Pushes the plan title to the far right, home + page title stay left. */
+  margin-right: auto;
 }
 
 .planner__meta {
@@ -221,6 +244,28 @@
 
 .planner-chat__send:disabled { opacity: 0.35; cursor: default; }
 
+.planner-chat__send--stop {
+  background: transparent;
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.planner-chat__followups {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: var(--pl-border);
+}
+
+.planner-chat__followups-label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
 .msg--user {
   align-self: flex-end;
   max-width: 85%;
@@ -394,6 +439,49 @@
   font-variant-numeric: tabular-nums;
 }
 
+.planner-days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: var(--space-2) var(--space-4);
+  border-bottom: var(--pl-border);
+}
+
+.planner-days__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-overlay);
+  color: var(--fg-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.planner-days__tab:hover {
+  color: var(--fg);
+  border-color: var(--day-color, var(--accent));
+}
+
+.planner-days__tab--on {
+  color: var(--fg);
+  background: var(--bg-raised);
+  border-color: var(--day-color, var(--accent));
+}
+
+.planner-days__swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--day-color, var(--accent));
+}
+
 .planner-map__wrap {
   flex: 1;
   min-height: 280px;
@@ -459,7 +547,7 @@
 
 .planner-map__pin-label {
   margin-top: 5px;
-  max-width: 112px;
+  max-width: 132px;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 0.625rem;
@@ -469,9 +557,45 @@
   color: #fff;
   background: rgba(11, 14, 20, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Name and time stack, so a long stop name can't push the time out of view. */
+.planner-map__pin-name {
+  display: block;
+  max-width: 120px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.planner-map__pin-day {
+  margin-right: 4px;
+  opacity: 0.75;
+  font-weight: 700;
+}
+
+.planner-map__pin-time {
+  display: block;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
+.planner-map__leg-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+  background: rgba(11, 14, 20, 0.92);
+  font-family: var(--font-display);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 .planner-map__legend {
@@ -523,6 +647,52 @@
 .planner-steps--empty {
   padding: var(--space-4);
   font-size: 0.75rem;
+  color: var(--fg-muted);
+}
+
+.timeline-days {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.timeline-day__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: 6px;
+  margin-bottom: var(--space-3);
+  border-bottom: 2px solid var(--day-color, var(--accent));
+}
+
+.timeline-day__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--day-color, var(--fg));
+}
+
+.timeline-day__stats {
+  font-size: 0.6875rem;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.timeline-day__summary {
+  margin: 0 0 var(--space-3);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+
+.timeline__stop-why {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  line-height: 1.5;
   color: var(--fg-muted);
 }
 

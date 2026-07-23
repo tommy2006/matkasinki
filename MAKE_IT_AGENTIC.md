@@ -423,3 +423,58 @@ Steps 6–7 are about making it persistent and public.
 
 *You're closer than it feels: the agent and its tools are built. Fund the key, flip the flag,
 verify the tools, and you have a live agentic app. The database and Vercel are the last mile.*
+
+---
+
+# Appendix: Deploy to Vercel — click by click
+
+Your code is on GitHub and builds clean, so this is mostly wiring. Vercel hosts the
+**web app** (Next.js); the Electron desktop shell is not deployed.
+
+### 1. Sign in
+Go to **https://vercel.com** → **Continue with GitHub** and authorize it (use the account
+that can access `tommy2006/matkasinki`).
+
+### 2. Import the repo
+**Add New… → Project** → find **matkasinki** → **Import**. If it's missing, click
+**Adjust GitHub App Permissions** and grant access to that repo.
+
+### 3. Confirm build settings (leave as detected)
+- Framework Preset: **Next.js**
+- Root Directory: **`./`**
+- Build Command: **`next build`**
+- Install Command: **`npm install`**
+
+### 4. Add Environment Variables (BEFORE the first deploy)
+Copy each value from your local `.env`:
+
+| Name | Value | Notes |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | `sk-ant-…` | needs credits; can add later |
+| `MATKASINKI_LIVE_AGENT` | `1` | turns the live agent on |
+| `DIGITRANSIT_PRIMARY_KEY` | your key | routes + geocoding + map tiles |
+| `DIGITRANSIT_SECONDARY_KEY` | your key | backup |
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://….supabase.co` | database URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | `sb_secret_…` | **secret** — server only |
+| `AI_ROUTE_MODEL` | `claude-sonnet-5` | optional |
+
+> Weather needs **no** key — it now uses Open-Meteo (free, keyless).
+
+### 5. Deploy
+Click **Deploy**. You get a URL like `https://matkasinki.vercel.app`.
+
+### 6. Test
+- `/journey` → add two stops → Plan → real route + map
+- `/routes` → MapLibre planner loads
+- `https://YOUR-URL/api/chat` → `"agentAvailable": true` once the Anthropic key is set
+
+### 7. Supabase & weather: nothing extra
+The service-role key works from Vercel out of the box, and weather is fetched live from
+Open-Meteo — both work on Vercel's read-only filesystem (no file writes anywhere).
+
+### 8. Auto-deploys
+Every `git push origin main` triggers a new deploy automatically; PRs get preview URLs.
+
+### Gotcha
+Very long agent runs could hit the serverless time limit — `api/chat` already sets
+`maxDuration = 60`, and the `stepCountIs(6)` cap keeps tool loops bounded.

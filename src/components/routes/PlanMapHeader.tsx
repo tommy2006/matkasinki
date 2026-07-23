@@ -1,12 +1,13 @@
 import type { LocalRoutePlan } from "@/features/local-routes/types";
-import { statsLine } from "./visuals/format";
+import { legsForDay, planDays, statsLine, stopsForDay } from "./visuals/format";
 
 interface PlanMapHeaderProps {
   plan: LocalRoutePlan | null;
   streaming?: boolean;
+  activeDay?: number | null;
 }
 
-export default function PlanMapHeader({ plan, streaming }: PlanMapHeaderProps) {
+export default function PlanMapHeader({ plan, streaming, activeDay = null }: PlanMapHeaderProps) {
   if (!plan && !streaming) {
     return (
       <div className="planner-map__head">
@@ -23,10 +24,18 @@ export default function PlanMapHeader({ plan, streaming }: PlanMapHeaderProps) {
     );
   }
 
+  const dayCount = planDays(plan).length;
+  const scope = activeDay == null ? null : `Day ${activeDay}`;
+  const stats = statsLine(stopsForDay(plan, activeDay), legsForDay(plan, activeDay));
+
   return (
     <div className="planner-map__head">
       <strong className="planner-map__title">{plan.title}</strong>
-      <span>{statsLine(plan.stops, plan.legs)}</span>
+      <span>
+        {scope ?? (dayCount > 1 ? `${dayCount} days` : null)}
+        {scope || dayCount > 1 ? " · " : ""}
+        {stats}
+      </span>
     </div>
   );
 }

@@ -1,4 +1,10 @@
-import type { Place, RouteLeg, RouteStop } from "@/features/local-routes/types";
+import type {
+  ItineraryDay,
+  LocalRoutePlan,
+  Place,
+  RouteLeg,
+  RouteStop,
+} from "@/features/local-routes/types";
 
 export type ModeStyle = {
   color: string;
@@ -92,4 +98,66 @@ export function stopMarkerTone(order: number, total: number): "start" | "mid" | 
   if (order === 1) return "start";
   if (order === total) return "end";
   return "mid";
+}
+
+/**
+ * Plans saved before itineraries went multi-day have no `day` on their stops
+ * and legs, so everything without one belongs to day 1.
+ */
+export function dayOf(item: { day?: number }): number {
+  return item.day && item.day > 0 ? item.day : 1;
+}
+
+/**
+ * Day colours are deliberately distinct from the mode colours in `modeStyle`:
+ * the map paints by mode inside a single day and by day across the whole trip,
+ * so the two palettes are never on screen at the same time.
+ */
+const DAY_COLORS = [
+  "#38bdf8",
+  "#f472b6",
+  "#facc15",
+  "#4ade80",
+  "#c084fc",
+  "#fb923c",
+  "#2dd4bf",
+];
+
+export function dayColor(day: number): string {
+  return DAY_COLORS[(Math.max(1, day) - 1) % DAY_COLORS.length];
+}
+
+/**
+ * The itinerary's days, falling back to days inferred from the stops when the
+ * plan predates `plan.days` (or the model omitted it).
+ */
+export function planDays(plan: LocalRoutePlan): ItineraryDay[] {
+  const numbers = [...new Set(plan.stops.map(dayOf))].sort((a, b) => a - b);
+  const declared = plan.days ?? [];
+  if (numbers.length === 0) return declared;
+
+  return numbers.map((day) => {
+    const match = declared.find((d) => d.day === day);
+    return match ?? { day, title: `Day ${day}` };
+  });
+}
+
+export function isMultiDay(plan: LocalRoutePlan): boolean {
+  return planDays(plan).length > 1;
+}
+
+export function stopsForDay(plan: LocalRoutePlan, day: number | null): RouteStop[] {
+  return day == null ? plan.stops : plan.stops.filter((s) => dayOf(s) === day);
+}
+
+export function legsForDay(plan: LocalRoutePlan, day: number | null): RouteLeg[] {
+  return day == null ? plan.legs : plan.legs.filter((l) => dayOf(l) === day);
+}
+
+export function dayLabel(day: ItineraryDay): string {
+  if (!day.date) return day.title;
+  const parsed = new Date(day.date);
+  if (Number.isNaN(parsed.getTime())) return day.title;
+  const when = parsed.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+  return `${day.title} · ${when}`;
 }

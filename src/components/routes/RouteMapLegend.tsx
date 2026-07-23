@@ -1,9 +1,14 @@
-import { ROUTE_LEGEND } from "./visuals/format";
+import { ROUTE_LEGEND, type ModeStyle } from "./visuals/format";
 
-export default function RouteMapLegend() {
+interface RouteMapLegendProps {
+  /** Defaults to the transit-mode legend; pass day swatches for a whole-trip view. */
+  items?: ModeStyle[];
+}
+
+export default function RouteMapLegend({ items = ROUTE_LEGEND }: RouteMapLegendProps) {
   return (
     <div className="planner-map__legend" aria-label="Route legend">
-      {ROUTE_LEGEND.map((item) => (
+      {items.map((item) => (
         <span key={item.label} className="planner-map__legend-item">
           <span
             className={`planner-map__legend-line${item.dash ? " planner-map__legend-line--dash" : ""}`}
