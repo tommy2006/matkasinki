@@ -1,4 +1,4 @@
-import { ToolLoopAgent } from "ai";
+import { ToolLoopAgent, stepCountIs } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { MODELS } from "@/agents/shared/llm";
 import { useLiveRouteAgent } from "@/features/local-routes/chat-suggestions";
@@ -14,6 +14,7 @@ export const routePlannerAgent = new ToolLoopAgent({
   model: anthropic(modelId),
   instructions: HELSINKI_SYSTEM_PROMPT,
   tools: routeTools,
+  stopWhen: stepCountIs(6),
 });
 
 export function isRoutePlannerAvailable(): boolean {

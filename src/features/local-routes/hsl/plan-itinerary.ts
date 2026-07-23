@@ -4,10 +4,10 @@ import { hslGraphql } from "./client";
 
 const PLAN_QUERY = `
 query PlanHelsinki(
-  $originLat: Float!
-  $originLon: Float!
-  $destLat: Float!
-  $destLon: Float!
+  $originLat: CoordinateValue!
+  $originLon: CoordinateValue!
+  $destLat: CoordinateValue!
+  $destLon: CoordinateValue!
   $via: [PlanViaLocationInput!]
   $departure: OffsetDateTime
 ) {

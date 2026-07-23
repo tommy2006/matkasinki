@@ -29,6 +29,7 @@ export const routeTools = {
       limit: z.number().min(5).max(40).default(25),
     }),
     execute: async ({ categories, limit }) => {
+      console.log("[using tool] searchPlaces", { categories, limit });
       const places = await searchPlaces(categories as PlaceCategory[], limit);
       return { count: places.length, places };
     },
@@ -41,6 +42,7 @@ export const routeTools = {
       limit: z.number().min(1).max(8).default(5),
     }),
     execute: async ({ text, limit }) => {
+      console.log("[using tool] geocodePlace", { text, limit });
       const places = await geocodePlace(text, limit);
       return { count: places.length, places };
     },
@@ -60,6 +62,7 @@ export const routeTools = {
       departureIso: z.string().optional(),
     }),
     execute: async (input) => {
+      console.log("[using tool] planItinerary", input);
       const legs = await planItinerary({
         origin: { lat: input.originLat, lon: input.originLon },
         destination: { lat: input.destinationLat, lon: input.destinationLon },
@@ -102,6 +105,7 @@ export const routeTools = {
       ),
     }),
     execute: async (input) => {
+      console.log("[using tool] savePlan", input);
       const plan: LocalRoutePlan = {
         id: newRouteId(),
         prompt: input.prompt,

@@ -127,10 +127,10 @@ export async function searchDigitransitStops(q: string, limit = 8): Promise<Stop
 
 const PLAN_QUERY = `
 query PlanHsl(
-  $originLat: Float!
-  $originLon: Float!
-  $destLat: Float!
-  $destLon: Float!
+  $originLat: CoordinateValue!
+  $originLon: CoordinateValue!
+  $destLat: CoordinateValue!
+  $destLon: CoordinateValue!
   $departure: OffsetDateTime
   $modes: PlanModesInput
   $preferences: PlanPreferencesInput
@@ -232,9 +232,18 @@ function buildModes(preference: TransportPreference) {
 }
 
 function buildPreferences(preference: TransportPreference) {
+  // Digitransit routing API v2 nests walk/transfer prefs under street/transit.
   return {
-    walkReluctance: preference.rain ? 4.5 : 1.4,
-    transferPenalty: preference.rain ? 120 : 0,
+    street: {
+      walk: {
+        reluctance: preference.rain ? 4.5 : 1.4,
+      },
+    },
+    transit: {
+      transfer: {
+        cost: preference.rain ? 120 : 0,
+      },
+    },
   };
 }
 
