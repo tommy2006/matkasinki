@@ -116,16 +116,18 @@ export const routeTools = {
         legs: input.legs,
         savedAt: new Date().toISOString(),
       };
-      saveRoute(plan);
+      await saveRoute(plan);
       return { ok: true, id: plan.id, plan };
     },
   }),
 };
 
-export function extractSavedPlanFromToolOutput(output: unknown): LocalRoutePlan | null {
+export async function extractSavedPlanFromToolOutput(
+  output: unknown,
+): Promise<LocalRoutePlan | null> {
   if (!output || typeof output !== "object") return null;
   const o = output as { plan?: LocalRoutePlan; id?: string };
   if (o.plan) return o.plan;
-  if (o.id) return getRoute(o.id);
+  if (o.id) return await getRoute(o.id);
   return null;
 }

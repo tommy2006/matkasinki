@@ -9,12 +9,13 @@ export async function handleRoutePlannerGet(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const id = url.searchParams.get("id");
   if (id) {
-    const plan = getRoute(id);
+    const plan = await getRoute(id);
     if (!plan) return Response.json({ error: "Not found" }, { status: 404 });
     return Response.json({ plan });
   }
+  const routes = await listRoutes();
   return Response.json({
-    routes: listRoutes(),
+    routes,
     demoMode: isDemoMode(),
     agentAvailable: useLiveRouteAgent(),
   });
