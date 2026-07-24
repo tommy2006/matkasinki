@@ -6,8 +6,12 @@ interface PlaceResultsVisualProps {
 }
 
 export default function PlaceResultsVisual({ output }: PlaceResultsVisualProps) {
-  const data = output as { count?: number; places?: Place[] } | null;
-  const places = data?.places ?? [];
+  const data = output as
+    | { count?: number; places?: Place[]; results?: { places?: Place[] }[] }
+    | null;
+  // searchPlaces returns { places }; batched geocodePlace returns
+  // { results: [{ places }] } — flatten the latter to one list.
+  const places = data?.places ?? data?.results?.flatMap((r) => r.places ?? []) ?? [];
   if (!places.length) return null;
 
   const shown = placeList(places);

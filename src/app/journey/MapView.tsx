@@ -195,6 +195,8 @@ export default function MapView({
           padding: [40, 40],
           maxZoom: 15,
         });
+      } else if (dests.length === 1) {
+        map.setView([dests[0].lat, dests[0].lon], 14);
       } else if (dests.length) {
         map.fitBounds(dests.map((d) => [d.lat, d.lon]) as [number, number][], {
           padding: [40, 40],
@@ -347,6 +349,7 @@ export default function MapView({
             "<b>" +
               escapeHtml(d.name) +
               "</b>" +
+              (d.code ? " · " + escapeHtml(d.code) : "") +
               (d.zone ? " · Zone " + escapeHtml(d.zone) : "")
           );
       });
@@ -358,6 +361,10 @@ export default function MapView({
           padding: [40, 40],
           maxZoom: 15,
         });
+      } else if (destinations && destinations.length === 1) {
+        // A single stop has no extent to fit — centre on it instead so the
+        // marker shows immediately at a sensible zoom.
+        map.setView([destinations[0].lat, destinations[0].lon], 14);
       } else if (destinations && destinations.length) {
         map.fitBounds(
           destinations.map((d) => [d.lat, d.lon]) as [number, number][],

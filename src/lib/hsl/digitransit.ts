@@ -81,8 +81,11 @@ interface RawStop {
 }
 
 function isSelectableStop(stop: StopLite): boolean {
-  if (inHslZones(stop)) return true;
-  return stop.lat >= 59.9 && stop.lat <= 60.45 && stop.lon >= 24.3 && stop.lon <= 25.5;
+  // Zones A–C only (see inHslZones). Live Digitransit stops carry a zoneId, so
+  // trust it when present. Only stops with no zone at all fall back to a tight
+  // Helsinki-core bounding box — the wider box used to let D–E stops through.
+  if (stop.zone) return inHslZones(stop);
+  return stop.lat >= 60.1 && stop.lat <= 60.32 && stop.lon >= 24.6 && stop.lon <= 25.2;
 }
 
 function toStopLite(s: RawStop): StopLite | null {

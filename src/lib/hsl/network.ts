@@ -32,8 +32,10 @@ export interface HslNetwork {
   transfers: Record<string, { to: string; dist: number }[]>;
 }
 
-// Travel is limited to the HSL ticket zones A–E only.
-export const HSL_ZONES = ["A", "B", "C", "D", "E"] as const;
+// Travel is limited to HSL ticket zones A–C (Helsinki, Espoo, Vantaa and the
+// airport). Routing to the outer zones D–E (Kirkkonummi/Kerava/Sipoo, Siuntio)
+// is unreliable here, so those stops are not offered.
+export const HSL_ZONES = ["A", "B", "C"] as const;
 export function inHslZones(s: { zone: string | null }): boolean {
   return !!s.zone && (HSL_ZONES as readonly string[]).includes(s.zone);
 }
@@ -69,7 +71,7 @@ export function haversine(a: { lat: number; lon: number }, b: { lat: number; lon
 const MODE_RANK: Record<string, number> = { SUBWAY: 0, RAIL: 1, TRAM: 2, FERRY: 3, BUS: 4 };
 
 /**
- * Search selectable destinations — HSL zones A–E only. De-duplicates the many
+ * Search selectable destinations — HSL zones A–C only. De-duplicates the many
  * same-named stop nodes (platforms / both directions) to the best-connected one,
  * and ranks name-prefix matches and rail/metro hubs first.
  */

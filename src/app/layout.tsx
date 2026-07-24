@@ -9,7 +9,7 @@ const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space
 export const metadata: Metadata = {
   title: "Matkasinki — HSL journey planner",
   description:
-    "Plan the best path across the Helsinki region (HSL zones A–E) using trains, metro, trams, buses and ferries — weather-aware, on the interactive Digitransit HSL map.",
+    "Plan the best path across the Helsinki region (HSL zones A–C) using trains, metro, trams, buses and ferries — weather-aware, on the interactive Digitransit HSL map.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/journey" className="nav__link">Journey</Link>
               <Link href="/routes" className="nav__link">Routes</Link>
               <Link href="/chat" className="nav__link">Chat</Link>
-              <span className="nav__link nav__link--muted">HSL zones A–E</span>
+              <span className="nav__link nav__link--muted">HSL zones A–C</span>
             </div>
           </div>
         </nav>

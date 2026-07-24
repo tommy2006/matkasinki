@@ -7,7 +7,10 @@ const OVERPASS_URLS = [
   "https://overpass.kumi.systems/api/interpreter",
   "https://overpass.osm.ch/api/interpreter",
 ];
-const REQUEST_TIMEOUT_MS = 20_000;
+// Kept short on purpose: this runs inside the agent's tool loop, so a slow
+// mirror stalls the whole plan. Fail fast and move to the next mirror (or the
+// stale cache) rather than letting one call hang the run for a minute.
+const REQUEST_TIMEOUT_MS = 8_000;
 
 const CATEGORY_TAGS: Record<PlaceCategory, string[]> = {
   museum: ['nwr["tourism"="museum"]'],

@@ -1,6 +1,6 @@
 "use client";
 
-// HSL journey planner. Build an itinerary of >= 2 destinations (HSL zones A–E),
+// HSL journey planner. Build an itinerary of >= 2 destinations (HSL zones A–C),
 // route via the live Digitransit HSL GraphQL API (with offline graph fallback),
 // biased by today's weather, and draw real leg geometry on the Digitransit map.
 
@@ -132,7 +132,7 @@ export default function JourneyPage() {
         <style>{css}</style>
 
         <header className="stack rise rise-1" style={{ gap: "var(--space-2)" }}>
-          <span className="badge badge--accent">HSL region · zones A–E</span>
+          <span className="badge badge--accent">HSL region · zones A–C</span>
           <h1 style={{ marginBottom: 0 }}>Plan your HSL journey</h1>
           <p className="muted" style={{ marginBottom: 0, maxWidth: 640 }}>
             Add at least two stops. We find the best path across HSL trains, metro, trams,
@@ -160,6 +160,7 @@ export default function JourneyPage() {
                       <button key={s.id} className="jp-suggest-item" onClick={() => addStop(s)}>
                         <span className="jp-mode-dot" style={{ background: MODE_META[s.mode ?? "BUS"]?.color ?? "#007ac9" }} />
                         <span className="jp-suggest-name">{s.name}</span>
+                        {s.code && <span className="jp-code" title="HSL stop code">{s.code}</span>}
                         <span className="badge">{s.zone ? `Zone ${s.zone}` : "HSL"}</span>
                       </button>
                     ))}
@@ -175,7 +176,9 @@ export default function JourneyPage() {
                     <li key={s.id} className="jp-stop">
                       <span className="jp-badge">{String.fromCharCode(65 + i)}</span>
                       <span className="jp-stop-name">
-                        {s.name} <span className="muted">· Zone {s.zone}</span>
+                        {s.name}
+                        {s.code && <span className="jp-code" title="HSL stop code">{s.code}</span>}
+                        <span className="muted"> · Zone {s.zone}</span>
                       </span>
                       <span className="jp-stop-actions">
                         <button className="jp-icon" onClick={() => move(i, -1)} disabled={i === 0} aria-label="up">↑</button>
@@ -282,6 +285,7 @@ const css = `
 .jp-suggest-item { display: flex; align-items: center; gap: var(--space-3); width: 100%; text-align: left; padding: 10px 14px; background: none; border: none; color: var(--fg); cursor: pointer; }
 .jp-suggest-item:hover { background: var(--bg-raised); }
 .jp-suggest-name { flex: 1; }
+.jp-code { font-family: var(--font-mono, ui-monospace, "SF Mono", Menlo, monospace); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.02em; color: var(--fg-muted); background: var(--bg-raised); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; flex: none; white-space: nowrap; }
 .jp-mode-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
 .jp-itinerary { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .jp-stop { display: flex; align-items: center; gap: var(--space-3); background: var(--bg-overlay); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 8px 12px; }

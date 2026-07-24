@@ -4,7 +4,7 @@
 
 Describe the trip you want (*"three days in Helsinki, museums and the sea"*) and the agent finds real places, plans genuine HSL transit + walking routes for each day, and draws the whole thing on the Digitransit map. Or skip the chat and build a route stop by stop.
 
-Covers HSL zones A–E — Helsinki, Espoo, Vantaa, Kauniainen and the surrounding HSL municipalities — across bus, tram, metro, commuter rail and ferry.
+Covers HSL zones A–C — Helsinki, Espoo, Vantaa and the airport — across bus, tram, metro, commuter rail and ferry. (The outer zones D–E are out of scope: routing there is unreliable, so those stops aren't offered.)
 
 ---
 

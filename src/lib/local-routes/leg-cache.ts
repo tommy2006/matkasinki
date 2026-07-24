@@ -39,3 +39,20 @@ export function cacheLegs(legs: RouteLeg[]): string {
 export function legsForRouteId(routeId: string): RouteLeg[] | null {
   return legsByRouteId.get(routeId)?.legs ?? null;
 }
+
+/**
+ * Every leg cached within the last `withinMs`, flattened in insertion order.
+ *
+ * This is savePlan's safety net: if a real model mistypes the routeIds (or omits
+ * them), we can still recover the geometry it just planned this run instead of
+ * drawing a mapless plan. Legs carry their own `day`, so order across days is
+ * reconstructed downstream regardless of how they arrive here.
+ */
+export function recentLegs(withinMs: number): RouteLeg[] {
+  const cutoff = Date.now() - withinMs;
+  const out: RouteLeg[] = [];
+  for (const entry of legsByRouteId.values()) {
+    if (entry.at >= cutoff) out.push(...entry.legs);
+  }
+  return out;
+}

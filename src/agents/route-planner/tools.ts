@@ -9,7 +9,7 @@ import {
   type PlaceCategory,
 } from "@/features/local-routes";
 import { getRoute, newRouteId, saveRoute } from "@/lib/local-routes/store";
-import { cacheLegs, legsForRouteId } from "@/lib/local-routes/leg-cache";
+import { cacheLegs, legsForRouteId, recentLegs } from "@/lib/local-routes/leg-cache";
 
 const categoryEnum = z.enum([
   "museum",
@@ -70,24 +70,36 @@ export const routeTools = {
   }),
 
   geocodePlace: tool({
-    description: "Resolve a place name or address in Helsinki to coordinates",
+    description:
+      "Resolve one or MORE Helsinki place names/addresses to coordinates in a single call. " +
+      "Pass every name you still need in `queries` at once — do not call this once per place.",
     inputSchema: z.object({
-      text: z.string().min(1),
-      limit: z.number().min(1).max(8).default(5),
+      queries: z
+        .array(z.string().min(1))
+        .min(1)
+        .max(12)
+        .describe("All the place names to resolve, batched together"),
+      limit: z.number().min(1).max(5).default(2),
     }),
-    execute: async ({ text, limit }) =>
+    execute: async ({ queries, limit }) =>
       guard("geocodePlace", async () => {
-        console.log("[using tool] geocodePlace", { text, limit });
-        const places = await geocodePlace(text, limit);
-        return {
-          count: places.length,
-          places: places.map((p) => ({
-            name: p.name,
-            lat: p.lat,
-            lon: p.lon,
-            category: p.category,
-          })),
-        };
+        console.log("[using tool] geocodePlace", { queries: queries.length });
+        // Resolve every query in parallel so a batch costs one round-trip.
+        const results = await Promise.all(
+          queries.map(async (q) => {
+            const places = await geocodePlace(q, limit);
+            return {
+              query: q,
+              places: places.map((p) => ({
+                name: p.name,
+                lat: p.lat,
+                lon: p.lon,
+                category: p.category,
+              })),
+            };
+          }),
+        );
+        return { results };
       }),
   }),
 
@@ -171,6 +183,7 @@ export const routeTools = {
       ),
       routeIds: z
         .array(z.string())
+        .default([])
         .describe(
           "Every routeId returned by planItinerary, one per day, in day order. " +
             "The route geometry is looked up from these — do not retype it.",
@@ -185,24 +198,26 @@ export const routeTools = {
         });
 
         // Trade the routeIds back for the geometry planItinerary set aside.
-        // A miss means that day's route was never planned, so say which one
-        // rather than silently saving a day with no line on the map.
         const legs: LocalRoutePlan["legs"] = [];
         const missing: string[] = [];
         for (const routeId of input.routeIds) {
           const cached = legsForRouteId(routeId);
-          if (!cached) {
-            missing.push(routeId);
-            continue;
-          }
-          legs.push(...cached);
+          if (cached) legs.push(...cached);
+          else missing.push(routeId);
         }
 
-        if (missing.length && legs.length === 0) {
-          throw new Error(
-            `No route geometry found for ${missing.join(", ")}. ` +
-              `Call planItinerary for each day first, then pass the routeIds it returned.`,
-          );
+        // Safety net: a real model sometimes mistypes routeIds or forgets them.
+        // Rather than throw — which blanks the map and strands the user — recover
+        // the routes it just planned this run. A markers-only plan (no legs at
+        // all) is still saved and drawn; the lines are the only thing lost.
+        if (legs.length === 0) {
+          legs.push(...recentLegs(3 * 60 * 1000));
+          if (legs.length) {
+            console.warn(
+              `[savePlan] routeIds ${missing.length ? `(${missing.join(", ")}) ` : ""}` +
+                `resolved nothing; recovered ${legs.length} recently-planned legs.`,
+            );
+          }
         }
 
         const stops = stopsFromCoordinates(input.stops);

@@ -14,11 +14,12 @@ export const routePlannerAgent = new ToolLoopAgent({
   model: anthropic(modelId),
   instructions: HELSINKI_SYSTEM_PROMPT,
   tools: routeTools,
-  // A multi-day trip needs a step per day for planItinerary, plus place lookups,
-  // savePlan and the final reply. At 6 a 3-day plan ran out mid-routing and
-  // never reached savePlan, so no map was ever drawn. 18 clears a 5-day trip
-  // (the prompt's ceiling) with room for a retry.
-  stopWhen: stepCountIs(18),
+  // A multi-day trip needs a step per day for planItinerary, plus lookups,
+  // savePlan and the final reply. The real failure mode was the model spending
+  // its whole budget geocoding places one at a time and never reaching savePlan
+  // — batched geocoding (see tools) is the primary fix; this ceiling is the
+  // backstop, high enough that even a step-hungry 5-day plan still saves.
+  stopWhen: stepCountIs(32),
 });
 
 export function isRoutePlannerAvailable(): boolean {

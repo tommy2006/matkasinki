@@ -8,7 +8,7 @@ export default function Home() {
         <style>{css}</style>
 
         <header className="stack rise rise-1" style={{ gap: "var(--space-3)", textAlign: "center", alignItems: "center" }}>
-          <span className="badge badge--accent">HSL region · zones A–E</span>
+          <span className="badge badge--accent">HSL region · zones A–C</span>
           <h1 style={{ marginBottom: 0, maxWidth: 720 }}>
             Get anywhere in Helsinki, the smart way.
           </h1>
@@ -53,7 +53,7 @@ export default function Home() {
         </div>
 
         <p className="muted rise rise-3" style={{ textAlign: "center", marginTop: "var(--space-7)", fontSize: "0.85rem" }}>
-          Live routing from Digitransit · weather from Open-Meteo · covers HSL zones A–E
+          Live routing from Digitransit · weather from Open-Meteo · covers HSL zones A–C
         </p>
       </div>
     </main>
